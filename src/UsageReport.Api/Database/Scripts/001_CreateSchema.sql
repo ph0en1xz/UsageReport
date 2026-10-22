@@ -15,6 +15,10 @@ CREATE TABLE dbo.Customers
         (PaidUntil IS NULL OR (PaidFrom IS NOT NULL AND PaidUntil >= PaidFrom))
 );
 
+-- "Active customers" per month: seeks on PaidFrom, checks PaidUntil from the index (covering).
+-- Filtered: customers who never paid are not indexed.
+CREATE INDEX IX_Customers_PaidFrom ON dbo.Customers (PaidFrom) INCLUDE (PaidUntil) WHERE PaidFrom IS NOT NULL;
+
 -- A person who logs in under a customer.
 CREATE TABLE dbo.Users
 (
