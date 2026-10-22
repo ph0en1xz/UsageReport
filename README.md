@@ -157,8 +157,9 @@ Schema: [`001_CreateSchema.sql`](src/UsageReport.Api/Database/Scripts/001_Create
 
 ## How I used AI
 
-I built this with an AI coding assistant, working step by step and reviewing each step before moving on.
+I built this with an AI coding assistant, working step by step. I was the reviewer: every change was checked by me before moving on.
 
-- **What the AI did:** scaffolding, boilerplate (DI wiring, Dapper mapping, DbUp setup), the sample-data generator, and first drafts of the SQL, dashboard and tests.
-- **What I decided:** the metric definitions and their edge cases, the B2B data model, the schema simplifications (one paid window per customer), and the scope, including what to leave out: CQRS, MediatR, microservices, extra endpoints, large sample data.
-- **How I checked it:** the SQL test's expected numbers are worked out by hand, not taken from the code's output; I cross-checked the report against the raw trial rows; and running it end to end surfaced two environment issues the AI hadn't anticipated (on Windows `localhost` resolved to IPv6, which Docker-in-WSL doesn't forward, so the connection string uses `127.0.0.1`; and WSL stopping idle VMs, hence `restart: unless-stopped`).
+- **What I designed:** the database schema (tables, keys, constraints and indexes), the metric definitions and their edge cases, and the B2B data model (companies, their users, one trial per company).
+- **What the AI did:** scaffolding, boilerplate (DI wiring, Dapper mapping, DbUp setup), the sample-data generator, and first drafts of the report query, dashboard and tests.
+- **What I decided:** the scope, including what to leave out: CQRS, MediatR, microservices, extra endpoints, large sample data. I also trimmed what the AI over-built, for example indexes and constraints the report doesn't need.
+- **How I checked it:** the SQL test's expected numbers are worked out by hand, not taken from the code's output; I cross-checked the report against the raw trial rows; and I ran it end to end myself.
