@@ -1,0 +1,26 @@
+# Local secrets (see .env.example)
+.env
+
+# Build output
+[Bb]in/
+[Oo]bj/
+
+# Test results and coverage
+[Tt]est[Rr]esults/
+coverage*/
+*.coverage
+
+# IDEs: keep only the shared VS Code debug/build config
+.vs/
+.idea/
+*.user
+*.suo
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*.log

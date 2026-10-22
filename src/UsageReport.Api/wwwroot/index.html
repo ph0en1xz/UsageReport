@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Usage Report</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; background: #f6f7f9; color: #1f2933; }
+        h1 { margin: 0 0 4px; font-size: 22px; }
+        .subtitle { margin: 0 0 24px; color: #616e7c; font-size: 14px; }
+        .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; margin-bottom: 16px; }
+        .card { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, .08); }
+        .card h2 { margin: 0 0 12px; font-size: 15px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid #e4e7eb; }
+        th:first-child, td:first-child { text-align: left; }
+        tr.partial td { color: #9aa5b1; font-style: italic; }
+        .error { color: #b42318; }
+    </style>
+</head>
+<body>
+    <h1>Usage report</h1>
+    <p class="subtitle">Last 12 months, UTC. The current month is partial (month to date) and shown faded.</p>
+
+    <div class="charts">
+        <div class="card">
+            <h2>Active customers &amp; active users</h2>
+            <canvas id="activeChart"></canvas>
+        </div>
+        <div class="card">
+            <h2>Trials started &amp; converted to paid</h2>
+            <canvas id="trialsChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Monthly numbers</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Month</th>
+                    <th>Active customers</th>
+                    <th>Active users</th>
+                    <th>Trials started</th>
+                    <th>Trials converted</th>
+                </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const label = m => m.isPartialMonth ? `${m.month} (partial)` : m.month;
+
+        // Fade the current, partial month so its lower numbers aren't misread as a drop.
+        const fade = (months, color) => months.map(m => m.isPartialMonth ? color + '55' : color);
+
+        function renderCharts(months) {
+            const labels = months.map(label);
+
+            new Chart(document.getElementById('activeChart'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Active customers', data: months.map(m => m.activeCustomers), borderColor: '#2563eb', backgroundColor: '#2563eb' },
+                        { label: 'Active users', data: months.map(m => m.activeUsers), borderColor: '#16a34a', backgroundColor: '#16a34a' },
+                    ],
+                },
+                options: { scales: { y: { beginAtZero: true } } },
+            });
+
+            new Chart(document.getElementById('trialsChart'), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Trials started', data: months.map(m => m.trialsStarted), backgroundColor: fade(months, '#f59e0b') },
+                        { label: 'Trials converted', data: months.map(m => m.trialsConverted), backgroundColor: fade(months, '#7c3aed') },
+                    ],
+                },
+                options: { scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } },
+            });
+        }
+
+        function renderTable(months) {
+            document.getElementById('rows').innerHTML = months.map(m => `
+                <tr class="${m.isPartialMonth ? 'partial' : ''}">
+                    <td>${label(m)}</td>
+                    <td>${m.activeCustomers}</td>
+                    <td>${m.activeUsers}</td>
+                    <td>${m.trialsStarted}</td>
+                    <td>${m.trialsConverted}</td>
+                </tr>`).join('');
+        }
+
+        async function load() {
+            try {
+                const response = await fetch('/api/reports/monthly-usage?months=12');
+                if (!response.ok) throw new Error(`API returned ${response.status}`);
+                const months = await response.json();
+                renderCharts(months);
+                renderTable(months);
+            } catch (error) {
+                document.getElementById('rows').innerHTML =
+                    `<tr><td colspan="5" class="error">Could not load the report: ${error.message}</td></tr>`;
+            }
+        }
+
+        load();
+    </script>
+</body>
+</html>

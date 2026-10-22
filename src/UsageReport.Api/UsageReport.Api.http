@@ -1,0 +1,13 @@
+# Click "Send Request" above each request (VS Code: REST Client extension; also works in Visual Studio / Rider).
+# Start the database and the API first (see README).
+
+@baseUrl = http://localhost:5018
+
+### The monthly usage report (last 12 months, current month flagged as partial)
+GET {{baseUrl}}/api/reports/monthly-usage
+
+### Fewer months
+GET {{baseUrl}}/api/reports/monthly-usage?months=3
+
+### Invalid: months out of range -> 400 problem+json
+GET {{baseUrl}}/api/reports/monthly-usage?months=0
